@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -56,8 +57,27 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 		executedQueries.clear();
 	}
 
-	public static Map<String, SQLInfoStructure> getAll() {
-		return executedQueries;
+	public static List<SingleSQLQuery> getAll() {
+		List<SingleSQLQuery> result = new ArrayList<>();
+
+		for (Entry<String, SQLInfoStructure> a : executedQueries.entrySet()) {
+			String poolName = a.getValue().getPoolName();
+
+			for (Entry<String, SQLQuery> b : a.getValue().getQueries().entrySet()) {
+				String sql = b.getValue().getSql();
+
+				for (ExecutedSQLInfos c : b.getValue().getInfos()) {
+					SingleSQLQuery q = new SingleSQLQuery();
+					q.setPoolName(poolName);
+					q.setSql(sql);
+					q.setStackTrace(c.getStackTrace());
+					q.setTimestamp(c.getTimestamp());
+					result.add(q);
+				}
+			}
+		}
+
+		return result;
 	}
 
 	public static void addListener(String id, Consumer<SingleSQLQuery> consumer) {

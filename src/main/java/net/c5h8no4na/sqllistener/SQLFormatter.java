@@ -109,6 +109,7 @@ public class SQLFormatter {
 			@Override
 			public void visit(InExpression expression) {
 				expression.accept(fixInExpression());
+				expression.getLeftExpression().accept(fixExpressions());
 			}
 		};
 	}

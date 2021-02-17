@@ -45,6 +45,13 @@ public class SQLFormatter {
 	 * @return The formatted sql or the original if something goes wrong
 	 */
 	public String prettyPrint() {
+		return SqlFormatter.format(prettyPrintNoFormatting());
+	}
+
+	/**
+	 * @return
+	 */
+	public String prettyPrintNoFormatting() {
 		tableNameCounter.clear();
 		tableMap.clear();
 		Statement stmt;
@@ -58,8 +65,7 @@ public class SQLFormatter {
 			Select select = (Select) stmt;
 			formatSelect(select, (PlainSelect) select.getSelectBody());
 		}
-
-		return SqlFormatter.format(stmt.toString());
+		return stmt.toString();
 	}
 
 	private void formatSelect(Select select, PlainSelect plainSelect) {

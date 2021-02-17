@@ -71,6 +71,8 @@ public class SQLFormatter {
 				join.getOnExpression().accept(fixExpressions());
 			}
 		}
+
+		plainSelect.getWhere().accept(fixExpressions());
 	}
 
 	private TablesNamesFinder fixTableNames() {

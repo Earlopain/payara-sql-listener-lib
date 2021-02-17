@@ -37,11 +37,13 @@ public class SQLFormatter {
 	}
 
 	/**
-	 * Returns the sql formatted. Only call once, has side effects.
+	 * Beautifies hibernate sql queries
 	 * 
 	 * @return The formatted sql or the original if something goes wrong
 	 */
 	public String prettyPrint() {
+		tableNameCounter.clear();
+		tableMap.clear();
 		Statement stmt;
 		try {
 			stmt = CCJSqlParserUtil.parse(input);

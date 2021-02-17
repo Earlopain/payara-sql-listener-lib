@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
 
 public class GlassfishSQLTracer implements SQLTraceListener {
-
 	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.util", "java.lang",
 			"net.c5h8no4na.sqllistener.GlassfishSQLTracer", "com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss",
 			"org.apache");
@@ -19,13 +19,28 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	private static final Map<String, SQLInfoStructure> executedQueries = new ConcurrentHashMap<>();
 
+	private static final Map<String, Consumer<SingleSQLQuery>> listeners = new ConcurrentHashMap<>();
+
 	private static boolean isActive = true;
 
 	public void sqlTrace(SQLTraceRecord record) {
 		if (shouldLog(record)) {
 			SQLFormatter formatter = new SQLFormatter(record.getParams()[0].toString());
 			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
-			infos.addQuery(formatter.prettyPrint(), getFormattedStackTrace(), record.getTimeStamp());
+			String sql = formatter.prettyPrint();
+			String stackTrace = getFormattedStackTrace();
+			infos.addQuery(sql, stackTrace, record.getTimeStamp());
+
+			SingleSQLQuery query = new SingleSQLQuery();
+			query.setPoolName(record.getPoolName());
+			query.setSql(sql);
+			query.setStackTrace(stackTrace);
+			query.setTimestamp(record.getTimeStamp());
+
+			for (Consumer<SingleSQLQuery> consumer : listeners.values()) {
+				consumer.accept(query);
+			}
+
 		}
 	}
 
@@ -43,6 +58,14 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	public static Map<String, SQLInfoStructure> getAll() {
 		return executedQueries;
+	}
+
+	public static void addListener(String id, Consumer<SingleSQLQuery> consumer) {
+		listeners.put(id, consumer);
+	}
+
+	public static void removeListener(String id) {
+		listeners.remove(id);
 	}
 
 	/**

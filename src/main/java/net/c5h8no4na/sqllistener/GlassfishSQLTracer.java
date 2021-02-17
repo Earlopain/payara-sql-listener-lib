@@ -3,30 +3,28 @@ package net.c5h8no4na.sqllistener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
 
 public class GlassfishSQLTracer implements SQLTraceListener {
-	private static final Logger LOG = Logger.getLogger(GlassfishSQLTracer.class.getCanonicalName());
 
 	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.lang", "net.c5h8no4na.sqllistener.GlassfishSQLTracer",
 			"com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss", "org.apache");
 
 	private static final List<String> ALLOWED_METHODS = Arrays.asList("prepareStatement", "executeQuery");
 
+	private static final Map<String, SQLInfoStructure> executedQueries = new ConcurrentHashMap<>();
+
 	private static boolean isActive = true;
 
 	public void sqlTrace(SQLTraceRecord record) {
 		if (shouldLog(record)) {
 			SQLFormatter formatter = new SQLFormatter(record.getParams()[0].toString());
-			LOG.info("Classname: " + record.getClassName());
-			LOG.info("Methodname:" + record.getMethodName());
-			LOG.info("Params: " + formatter.prettyPrint());
-			LOG.info("Timestamp: " + record.getTimeStamp());
-			LOG.info("Pool" + record.getPoolName());
-			LOG.info("Trace: " + getFormattedStackTrace());
+			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
+			infos.addQuery(formatter.prettyPrint(), getFormattedStackTrace(), record.getTimeStamp());
 		}
 	}
 
@@ -36,6 +34,14 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	public static void deactivate() {
 		isActive = false;
+	}
+
+	public static void clear() {
+		executedQueries.clear();
+	}
+
+	public static Map<String, SQLInfoStructure> getAll() {
+		return executedQueries;
 	}
 
 	/**

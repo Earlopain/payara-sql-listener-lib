@@ -7,7 +7,10 @@ import com.github.vertical_blank.sqlformatter.SqlFormatter;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -101,6 +104,38 @@ public class SQLFormatter {
 			@Override
 			public void visit(Column column) {
 				column.setTable(tableMap.get(column.getTable().getName()));
+			}
+
+			@Override
+			public void visit(InExpression expression) {
+				expression.accept(fixInExpression());
+			}
+		};
+	}
+
+	/**
+	 * Removes all duplicate questionmarks from an InExpression
+	 * 
+	 * @return
+	 */
+	private ExpressionVisitorAdapter fixInExpression() {
+		return new ExpressionVisitorAdapter() {
+			@Override
+			public void visit(ExpressionList list) {
+				boolean containsQuestionmark = false;
+				ExpressionList purgedList = new ExpressionList();
+				for (Expression expression : list.getExpressions()) {
+					if (expression.toString().equals("?")) {
+						containsQuestionmark = true;
+					} else {
+						purgedList.addExpressions(expression);
+					}
+				}
+
+				if (containsQuestionmark) {
+					purgedList.addExpressions(new Column("?"));
+				}
+				list.setExpressions(purgedList.getExpressions());
 			}
 		};
 	}

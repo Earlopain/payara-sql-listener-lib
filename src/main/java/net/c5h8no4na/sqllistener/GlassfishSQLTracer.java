@@ -11,8 +11,9 @@ import org.glassfish.api.jdbc.SQLTraceRecord;
 
 public class GlassfishSQLTracer implements SQLTraceListener {
 
-	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.lang", "net.c5h8no4na.sqllistener.GlassfishSQLTracer",
-			"com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss", "org.apache");
+	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.util", "java.lang",
+			"net.c5h8no4na.sqllistener.GlassfishSQLTracer", "com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss",
+			"org.apache");
 
 	private static final List<String> ALLOWED_METHODS = Arrays.asList("prepareStatement", "executeQuery");
 
@@ -67,10 +68,17 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 		List<String> result = new ArrayList<>();
 		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
 		for (StackTraceElement stackTraceElement : stacks) {
-			if (PACKAGE_IGNORE_LIST.stream().noneMatch(entry -> stackTraceElement.getClassName().contains(entry))) {
+			if (shouldAddStackTraceElement(stackTraceElement)) {
 				result.add(stackTraceElement.toString());
 			}
 		}
 		return String.join("\n", result);
 	}
+
+	private boolean shouldAddStackTraceElement(StackTraceElement stackTraceElement) {
+		return PACKAGE_IGNORE_LIST.stream().noneMatch(entry -> {
+			return stackTraceElement.getClassName().contains(entry);
+		});
+	}
+
 }

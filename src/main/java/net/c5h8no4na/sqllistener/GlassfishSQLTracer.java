@@ -30,13 +30,14 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
 			String sql = formatter.prettyPrint();
 			List<String> stackTrace = getFilteredStackTrace();
-			infos.addQuery(sql, stackTrace, record.getTimeStamp());
+			infos.addQuery(sql, stackTrace, record.getTimeStamp(), record.getExecutionTime());
 
 			SingleSQLQuery query = new SingleSQLQuery();
 			query.setPoolName(record.getPoolName());
 			query.setSql(sql);
 			query.setStackTrace(stackTrace);
 			query.setTimestamp(record.getTimeStamp());
+			query.setExecutionTime(record.getExecutionTime());
 
 			for (Consumer<SingleSQLQuery> consumer : listeners.values()) {
 				consumer.accept(query);
@@ -72,6 +73,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 					q.setSql(sql);
 					q.setStackTrace(c.getStackTrace());
 					q.setTimestamp(c.getTimestamp());
+					q.setExecutionTime(c.getExecutionTime());
 					result.add(q);
 				}
 			}

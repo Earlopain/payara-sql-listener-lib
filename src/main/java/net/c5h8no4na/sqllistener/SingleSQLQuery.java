@@ -9,6 +9,7 @@ public class SingleSQLQuery implements Serializable {
 	private String sql;
 	private List<String> stackTrace;
 	private long timestamp;
+	private long executionTime;
 
 	public String getPoolName() {
 		return poolName;
@@ -40,5 +41,13 @@ public class SingleSQLQuery implements Serializable {
 
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
+	}
+
+	public long getExecutionTime() {
+		return executionTime;
+	}
+
+	public void setExecutionTime(long executionTime) {
+		this.executionTime = executionTime;
 	}
 }

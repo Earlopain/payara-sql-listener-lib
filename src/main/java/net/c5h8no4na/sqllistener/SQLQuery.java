@@ -14,8 +14,8 @@ public class SQLQuery {
 
 	private Queue<ExecutedSQLInfos> infos = new ConcurrentLinkedQueue<>();
 
-	public void add(List<String> stackTrace, long timestamp) {
-		infos.add(new ExecutedSQLInfos(stackTrace, timestamp));
+	public void add(List<String> stackTrace, long timestamp, long executionTime) {
+		infos.add(new ExecutedSQLInfos(stackTrace, timestamp, executionTime));
 	}
 
 	public String getSql() {

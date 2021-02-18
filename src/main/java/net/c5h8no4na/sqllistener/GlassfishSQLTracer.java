@@ -29,7 +29,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 			SQLFormatter formatter = new SQLFormatter(record.getParams()[0].toString());
 			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
 			String sql = formatter.prettyPrint();
-			String stackTrace = getFormattedStackTrace();
+			List<String> stackTrace = getFilteredStackTrace();
 			infos.addQuery(sql, stackTrace, record.getTimeStamp());
 
 			SingleSQLQuery query = new SingleSQLQuery();
@@ -107,15 +107,14 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 	 * 
 	 * @return The stacktrace newline delimited
 	 */
-	private String getFormattedStackTrace() {
+	private List<String> getFilteredStackTrace() {
 		List<String> result = new ArrayList<>();
-		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
-		for (StackTraceElement stackTraceElement : stacks) {
+		for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
 			if (shouldAddStackTraceElement(stackTraceElement)) {
 				result.add(stackTraceElement.toString());
 			}
 		}
-		return String.join("\n", result);
+		return result;
 	}
 
 	private boolean shouldAddStackTraceElement(StackTraceElement stackTraceElement) {

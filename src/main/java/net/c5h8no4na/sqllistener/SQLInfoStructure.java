@@ -1,5 +1,6 @@
 package net.c5h8no4na.sqllistener;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,7 +13,7 @@ public class SQLInfoStructure {
 		this.poolName = poolName;
 	}
 
-	public void addQuery(String sql, String stackTrace, long timestamp) {
+	public void addQuery(String sql, List<String> stackTrace, long timestamp) {
 		SQLQuery infos = queries.computeIfAbsent(sql, key -> new SQLQuery(key));
 		infos.add(stackTrace, timestamp);
 	}

@@ -1,15 +1,17 @@
 package net.c5h8no4na.sqllistener;
 
+import java.util.List;
+
 public class ExecutedSQLInfos {
-	private String stackTrace;
+	private List<String> stackTrace;
 	private long timestamp;
 
-	public ExecutedSQLInfos(String stackTrace, long timestamp) {
+	public ExecutedSQLInfos(List<String> stackTrace, long timestamp) {
 		this.stackTrace = stackTrace;
 		this.timestamp = timestamp;
 	}
 
-	public String getStackTrace() {
+	public List<String> getStackTrace() {
 		return stackTrace;
 	}
 

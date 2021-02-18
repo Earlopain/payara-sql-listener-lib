@@ -1,12 +1,13 @@
 package net.c5h8no4na.sqllistener;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class SingleSQLQuery implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String poolName;
 	private String sql;
-	private String stackTrace;
+	private List<String> stackTrace;
 	private long timestamp;
 
 	public String getPoolName() {
@@ -25,11 +26,11 @@ public class SingleSQLQuery implements Serializable {
 		this.sql = sql;
 	}
 
-	public String getStackTrace() {
+	public List<String> getStackTrace() {
 		return stackTrace;
 	}
 
-	public void setStackTrace(String stackTrace) {
+	public void setStackTrace(List<String> stackTrace) {
 		this.stackTrace = stackTrace;
 	}
 

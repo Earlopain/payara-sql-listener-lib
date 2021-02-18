@@ -45,12 +45,12 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 		}
 	}
 
-	public static void activate() {
-		isActive = true;
+	public static void toggle() {
+		isActive = !isActive;
 	}
 
-	public static void deactivate() {
-		isActive = false;
+	public static boolean isActive() {
+		return isActive;
 	}
 
 	public static void clear() {

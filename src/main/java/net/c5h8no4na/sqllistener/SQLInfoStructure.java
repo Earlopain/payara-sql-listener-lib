@@ -13,9 +13,9 @@ public class SQLInfoStructure {
 		this.poolName = poolName;
 	}
 
-	public void addQuery(String sql, List<String> stackTrace, long timestamp, long executionTime) {
+	public void addQuery(String sql, List<String> stackTrace, long timestamp) {
 		SQLQuery infos = queries.computeIfAbsent(sql, key -> new SQLQuery(key));
-		infos.add(stackTrace, timestamp, executionTime);
+		infos.add(stackTrace, timestamp);
 	}
 
 	public String getPoolName() {

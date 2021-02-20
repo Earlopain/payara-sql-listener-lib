@@ -5,12 +5,10 @@ import java.util.List;
 public class ExecutedSQLInfos {
 	private List<String> stackTrace;
 	private long timestamp;
-	private long executionTime;
 
-	public ExecutedSQLInfos(List<String> stackTrace, long timestamp, long executionTime) {
+	public ExecutedSQLInfos(List<String> stackTrace, long timestamp) {
 		this.stackTrace = stackTrace;
 		this.timestamp = timestamp;
-		this.executionTime = executionTime;
 	}
 
 	public List<String> getStackTrace() {
@@ -19,9 +17,5 @@ public class ExecutedSQLInfos {
 
 	public long getTimestamp() {
 		return timestamp;
-	}
-
-	public long getExecutionTime() {
-		return executionTime;
 	}
 }

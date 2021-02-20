@@ -2,16 +2,21 @@ package net.c5h8no4na.sqllistener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
 
 public class GlassfishSQLTracer implements SQLTraceListener {
+
+	private static final Integer lastQueriesMaxSize = 20;
+
 	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.util", "java.lang",
 			"net.c5h8no4na.sqllistener.GlassfishSQLTracer", "com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss",
 			"org.apache");
@@ -25,9 +30,11 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 	private static final List<String> SEND_QUERY_TO_SERVER = Arrays.asList("execute", "executeQuery", "executeUpdate");
 	private static final Map<String, SQLInfoStructure> executedQueries = new ConcurrentHashMap<>();
 
-	private static final Map<String, Consumer<SingleSQLQuery>> listeners = new ConcurrentHashMap<>();
+	private static final Queue<PreparedStatementData> lastExecutedQueries = new ConcurrentLinkedQueue<>();
 
-	private static final Map<Long, CurrentPreparedStatement> threadStatements = new ConcurrentHashMap<>();
+	private static final Map<String, Consumer<PreparedStatementData>> listeners = new ConcurrentHashMap<>();
+
+	private static final Map<Long, PreparedStatementData> threadStatements = new ConcurrentHashMap<>();
 
 	private static boolean isActive = true;
 
@@ -45,7 +52,6 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 	 * I would have thought those would be cached somehow but whatever
 	 */
 	public void sqlTrace(SQLTraceRecord record) {
-
 		if (!isActive) {
 			return;
 		}
@@ -53,36 +59,31 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 		String methodName = record.getMethodName();
 		if (methodName.equals("prepareStatement")) {
 			String sql = (String) record.getParams()[0];
-			CurrentPreparedStatement current = new CurrentPreparedStatement(sql);
+			PreparedStatementData current = new PreparedStatementData(sql, record.getPoolName(), getFilteredStackTrace(),
+					record.getTimeStamp());
 			threadStatements.put(record.getThreadID(), current);
 		} else if (methodName.equals("setNull")) {
-			CurrentPreparedStatement current = threadStatements.get(record.getThreadID());
+			PreparedStatementData current = threadStatements.get(record.getThreadID());
 			current.addParameter((Integer) record.getParams()[0], null);
 		} else if (BINARY_STATEMENT_SETTERS.contains(methodName)) {
-			CurrentPreparedStatement current = threadStatements.get(record.getThreadID());
+			PreparedStatementData current = threadStatements.get(record.getThreadID());
 			current.addParameter((Integer) record.getParams()[0], "<binary data>");
 		} else if (NON_BINARY_STATEMENT_SETTERS.contains(methodName)) {
-			CurrentPreparedStatement current = threadStatements.get(record.getThreadID());
+			PreparedStatementData current = threadStatements.get(record.getThreadID());
 			current.addParameter((Integer) record.getParams()[0], record.getParams()[1]);
 		} else if (SEND_QUERY_TO_SERVER.contains(methodName)) {
-			CurrentPreparedStatement current = threadStatements.get(record.getThreadID());
-
-			List<String> stackTrace = getFilteredStackTrace();
-			String sqlSortable = current.getSQLSortable();
-			String sqlNoQuestionmarks = current.getSQLReplaceQuestionmarks();
+			PreparedStatementData current = threadStatements.get(record.getThreadID());
+			current.finish();
+			lastExecutedQueries.add(current);
+			if (lastExecutedQueries.size() > lastQueriesMaxSize) {
+				lastExecutedQueries.remove();
+			}
 
 			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
-			infos.addQuery(current.getSQLSortable(), stackTrace, record.getTimeStamp());
+			infos.addQuery(current.getSqlSortable(), current.getStrackTrace(), record.getTimeStamp());
 
-			SingleSQLQuery query = new SingleSQLQuery();
-			query.setPoolName(record.getPoolName());
-			query.setSqlSortable(sqlSortable);
-			query.setSqlNoQuestionmarks(sqlNoQuestionmarks);
-			query.setStackTrace(stackTrace);
-			query.setTimestamp(record.getTimeStamp());
-
-			for (Consumer<SingleSQLQuery> consumer : listeners.values()) {
-				consumer.accept(query);
+			for (Consumer<PreparedStatementData> consumer : listeners.values()) {
+				consumer.accept(current);
 			}
 		}
 	}
@@ -99,31 +100,15 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 		executedQueries.clear();
 	}
 
-	public static List<SingleSQLQuery> getAll() {
-		List<SingleSQLQuery> result = new ArrayList<>();
-
-		for (Entry<String, SQLInfoStructure> a : executedQueries.entrySet()) {
-			String poolName = a.getValue().getPoolName();
-
-			for (Entry<String, SQLQuery> b : a.getValue().getQueries().entrySet()) {
-				String sql = b.getValue().getSql();
-
-				for (ExecutedSQLInfos c : b.getValue().getInfos()) {
-					SingleSQLQuery q = new SingleSQLQuery();
-					q.setPoolName(poolName);
-					q.setSqlSortable(sql);
-					q.setSqlNoQuestionmarks(sql);
-					q.setStackTrace(c.getStackTrace());
-					q.setTimestamp(c.getTimestamp());
-					result.add(q);
-				}
-			}
-		}
-
-		return result;
+	public static Collection<SQLInfoStructure> getAll() {
+		return executedQueries.values();
 	}
 
-	public static void addListener(String id, Consumer<SingleSQLQuery> consumer) {
+	public static Queue<PreparedStatementData> getRecent() {
+		return lastExecutedQueries;
+	}
+
+	public static void addListener(String id, Consumer<PreparedStatementData> consumer) {
 		listeners.put(id, consumer);
 	}
 

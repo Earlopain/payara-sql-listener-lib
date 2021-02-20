@@ -1,5 +1,7 @@
 package net.c5h8no4na.sqllistener;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,9 +17,28 @@ class FormattingTest {
 		String formatted2 = getFormatted(input2);
 		String expected2 = "SELECT posts_0.id, posts_0.approver_id, posts_0.created_at, posts_0.description, posts_0.duration, posts_0.extension_id, posts_0.fav_count, posts_0.height, posts_0.md5, posts_0.rating_id, posts_0.score_down, posts_0.score_total, posts_0.score_up, posts_0.size, posts_0.updated_at, posts_0.uploader_id, posts_0.width, post_children_0.post_id, posts_1.id, posts_1.approver_id, posts_1.created_at, posts_1.description, posts_1.duration, posts_1.extension_id, posts_1.fav_count, posts_1.height, posts_1.md5, posts_1.rating_id, posts_1.score_down, posts_1.score_total, posts_1.score_up, posts_1.size, posts_1.updated_at, posts_1.uploader_id, posts_1.width, post_children_1.post_id FROM posts AS posts_0 LEFT OUTER JOIN post_children AS post_children_0 ON posts_0.id = post_children_0.child_id LEFT OUTER JOIN posts AS posts_1 ON post_children_0.post_id = posts_1.id LEFT OUTER JOIN post_children AS post_children_1 ON posts_1.id = post_children_1.child_id WHERE posts_0.id = 100";
 		Assertions.assertEquals(expected2, formatted2);
+
+		String input3 = "SELECT file FROM posts WHERE id = ?";
+		String formatted3 = getFormatted(input3, Map.of(1, 102));
+		String expected3 = "SELECT file FROM posts WHERE id = 102";
+		Assertions.assertEquals(expected3, formatted3);
+
+		String input4 = "SELECT id FROM tags WHERE name = ?";
+		String formatted4 = getFormatted(input4, Map.of(1, "digitrade"));
+		String expected4 = "SELECT id FROM tags WHERE name = \"digitrade\"";
+		Assertions.assertEquals(expected4, formatted4);
+
+		String input5 = "SELECT tags_0.id, tags_0.tag_type_id, tags_0.text FROM tags AS tags_0 WHERE tags_0.text IN (?, ?)";
+		String formatted5 = getFormatted(input5, Map.of(1, "male", 2, "female"));
+		String expected5 = "SELECT tags_0.id, tags_0.tag_type_id, tags_0.text FROM tags AS tags_0 WHERE tags_0.text IN (\"male\", \"female\")";
+		Assertions.assertEquals(expected5, formatted5);
 	}
 
 	private String getFormatted(String input) {
 		return new SQLFormatter(input).prettyPrintNoFormatting();
+	}
+
+	private String getFormatted(String input, Map<Integer, Object> params) {
+		return new SQLFormatterWithParams(input, params).prettyPrintNoFormatting();
 	}
 }

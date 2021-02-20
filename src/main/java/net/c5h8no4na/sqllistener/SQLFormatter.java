@@ -31,9 +31,9 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
  */
 public class SQLFormatter {
 
-	private final String input;
-	private final Map<String, Integer> tableNameCounter = new HashMap<>();
-	private final Map<String, Table> tableMap = new HashMap<>();
+	protected final String input;
+	protected final Map<String, Integer> tableNameCounter = new HashMap<>();
+	protected final Map<String, Table> tableMap = new HashMap<>();
 
 	public SQLFormatter(String input) {
 		this.input = input;
@@ -88,9 +88,13 @@ public class SQLFormatter {
 		return new TablesNamesFinder() {
 			@Override
 			public void visit(Table table) {
-				String originalTableAlias = table.getAlias().getName();
-				table.setAlias(getTableAlias(table));
-				tableMap.put(originalTableAlias, table);
+				if (table.getAlias() == null) {
+					tableMap.put(table.getName(), table);
+				} else {
+					String originalTableAlias = table.getAlias().getName();
+					table.setAlias(getTableAlias(table));
+					tableMap.put(originalTableAlias, table);
+				}
 			}
 		};
 	}
@@ -109,7 +113,9 @@ public class SQLFormatter {
 		return new ExpressionVisitorAdapter() {
 			@Override
 			public void visit(Column column) {
-				column.setTable(tableMap.get(column.getTable().getName()));
+				if (column.getTable() != null) {
+					column.setTable(tableMap.get(column.getTable().getName()));
+				}
 			}
 
 			@Override
@@ -125,7 +131,7 @@ public class SQLFormatter {
 	 * 
 	 * @return
 	 */
-	private ExpressionVisitorAdapter fixInExpression() {
+	protected ExpressionVisitorAdapter fixInExpression() {
 		return new ExpressionVisitorAdapter() {
 			@Override
 			public void visit(ExpressionList list) {

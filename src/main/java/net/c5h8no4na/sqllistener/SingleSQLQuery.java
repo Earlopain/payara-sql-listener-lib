@@ -6,10 +6,10 @@ import java.util.List;
 public class SingleSQLQuery implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String poolName;
-	private String sql;
+	private String sqlSortable;
+	private String sqlNoQuestionmarks;
 	private List<String> stackTrace;
 	private long timestamp;
-	private long executionTime;
 
 	public String getPoolName() {
 		return poolName;
@@ -19,12 +19,20 @@ public class SingleSQLQuery implements Serializable {
 		this.poolName = poolName;
 	}
 
-	public String getSql() {
-		return sql;
+	public String getSqlSortable() {
+		return sqlSortable;
 	}
 
-	public void setSql(String sql) {
-		this.sql = sql;
+	public void setSqlSortable(String sqlSortable) {
+		this.sqlSortable = sqlSortable;
+	}
+
+	public String getSqlNoQuestionmarks() {
+		return sqlNoQuestionmarks;
+	}
+
+	public void setSqlNoQuestionmarks(String sqlNoQuestionmarks) {
+		this.sqlNoQuestionmarks = sqlNoQuestionmarks;
 	}
 
 	public List<String> getStackTrace() {
@@ -41,13 +49,5 @@ public class SingleSQLQuery implements Serializable {
 
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
-	}
-
-	public long getExecutionTime() {
-		return executionTime;
-	}
-
-	public void setExecutionTime(long executionTime) {
-		this.executionTime = executionTime;
 	}
 }

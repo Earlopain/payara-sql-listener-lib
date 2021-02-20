@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
@@ -15,7 +16,7 @@ import org.glassfish.api.jdbc.SQLTraceRecord;
 
 public class GlassfishSQLTracer implements SQLTraceListener {
 
-	private static final Integer lastQueriesMaxSize = 20;
+	private static final Integer LAST_QUERIES_MAX_SIZE = 20;
 
 	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.util", "java.lang",
 			"net.c5h8no4na.sqllistener.GlassfishSQLTracer", "com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss",
@@ -31,6 +32,8 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 	private static final Map<String, SQLInfoStructure> executedQueries = new ConcurrentHashMap<>();
 
 	private static final Queue<PreparedStatementData> lastExecutedQueries = new ConcurrentLinkedQueue<>();
+
+	private static final AtomicInteger queryCount = new AtomicInteger(0);
 
 	private static final Map<String, Consumer<PreparedStatementData>> listeners = new ConcurrentHashMap<>();
 
@@ -75,9 +78,11 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 			PreparedStatementData current = threadStatements.get(record.getThreadID());
 			current.finish();
 			lastExecutedQueries.add(current);
-			if (lastExecutedQueries.size() > lastQueriesMaxSize) {
+			if (lastExecutedQueries.size() > LAST_QUERIES_MAX_SIZE) {
 				lastExecutedQueries.remove();
 			}
+
+			queryCount.incrementAndGet();
 
 			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
 			infos.addQuery(current.getSqlSortable(), current.getStrackTrace(), record.getTimeStamp());
@@ -98,6 +103,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	public static void clear() {
 		executedQueries.clear();
+		queryCount.set(0);
 	}
 
 	public static Collection<SQLInfoStructure> getAll() {
@@ -106,6 +112,10 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	public static Queue<PreparedStatementData> getRecent() {
 		return lastExecutedQueries;
+	}
+
+	public static int getCurrentQueryCount() {
+		return queryCount.get();
 	}
 
 	public static void addListener(String id, Consumer<PreparedStatementData> consumer) {

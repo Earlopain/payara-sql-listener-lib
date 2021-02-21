@@ -1,5 +1,8 @@
 package net.c5h8no4na.sqllistener;
 
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,16 +21,16 @@ public class SQLFormatterWithParams extends SQLFormatter {
 	@Override
 	public String prettyPrintNoFormatting() {
 		String sqlWithQuestionsmarks = super.prettyPrintNoFormatting();
-		List<Integer> questionmarkIndex = new ArrayList<>();
-
-		for (int i = 0; i < sqlWithQuestionsmarks.length(); i++) {
-			if (input.charAt(i) == '?') {
-				questionmarkIndex.add(i);
-			}
-		}
 
 		if (params.size() == 0) {
 			return sqlWithQuestionsmarks;
+		}
+
+		List<Integer> questionmarkIndex = new ArrayList<>();
+		for (int i = 0; i < sqlWithQuestionsmarks.length(); i++) {
+			if (sqlWithQuestionsmarks.charAt(i) == '?') {
+				questionmarkIndex.add(i);
+			}
 		}
 
 		if (questionmarkIndex.size() != params.size()) {
@@ -51,6 +54,8 @@ public class SQLFormatterWithParams extends SQLFormatter {
 		if (o == null) {
 			return "null";
 		} else if (o instanceof String) {
+			return String.format("\"%s\"", o);
+		} else if (o instanceof Date || o instanceof Time || o instanceof Timestamp) {
 			return String.format("\"%s\"", o);
 		} else {
 			return o.toString();

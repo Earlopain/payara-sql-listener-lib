@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
 
+import net.c5h8no4na.sqllistener.formatter.BinaryData;
+
 public class GlassfishSQLTracer implements SQLTraceListener {
 
 	private static final Integer LAST_QUERIES_MAX_SIZE = 20;

@@ -1,4 +1,4 @@
-package net.c5h8no4na.sqllistener;
+package net.c5h8no4na.sqllistener.formatter;
 
 public class BinaryData {
 	public static BinaryData VALUE = new BinaryData();

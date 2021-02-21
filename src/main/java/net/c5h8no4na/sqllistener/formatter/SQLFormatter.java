@@ -1,4 +1,4 @@
-package net.c5h8no4na.sqllistener;
+package net.c5h8no4na.sqllistener.formatter;
 
 import java.util.HashMap;
 import java.util.Map;

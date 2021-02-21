@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.c5h8no4na.sqllistener.formatter.SQLFormatter;
+import net.c5h8no4na.sqllistener.formatter.SQLFormatterWithParams;
+
 public class PreparedStatementData {
 	private final transient String rawSQL;
 	private final transient Map<Integer, Object> parameter = new HashMap<>();

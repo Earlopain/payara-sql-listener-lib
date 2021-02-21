@@ -70,7 +70,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 			current.addParameter((Integer) record.getParams()[0], null);
 		} else if (BINARY_STATEMENT_SETTERS.contains(methodName)) {
 			PreparedStatementData current = threadStatements.get(record.getThreadID());
-			current.addParameter((Integer) record.getParams()[0], "<binary data>");
+			current.addParameter((Integer) record.getParams()[0], BinaryData.VALUE);
 		} else if (NON_BINARY_STATEMENT_SETTERS.contains(methodName)) {
 			PreparedStatementData current = threadStatements.get(record.getThreadID());
 			current.addParameter((Integer) record.getParams()[0], record.getParams()[1]);

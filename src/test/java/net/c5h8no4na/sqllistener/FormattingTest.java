@@ -32,6 +32,11 @@ class FormattingTest {
 		String formatted5 = getFormatted(input5, Map.of(1, "male", 2, "female"));
 		String expected5 = "SELECT tags_0.id, tags_0.tag_type_id, tags_0.text FROM tags AS tags_0 WHERE tags_0.text IN (\"male\", \"female\")";
 		Assertions.assertEquals(expected5, formatted5);
+
+		String input6 = "INSERT INTO post_file (file, post_id) VALUES (?, ?)";
+		String formatted6 = getFormatted(input6, Map.of(1, BinaryData.VALUE, 2, 123));
+		String expected6 = "INSERT INTO post_file (file, post_id) VALUES (<binary data>, 123)";
+		Assertions.assertEquals(expected6, formatted6);
 	}
 
 	private String getFormatted(String input) {

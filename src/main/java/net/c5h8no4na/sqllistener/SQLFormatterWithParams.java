@@ -54,9 +54,9 @@ public class SQLFormatterWithParams extends SQLFormatter {
 		if (o == null) {
 			return "null";
 		} else if (o instanceof String) {
-			return String.format("\"%s\"", o);
+			return String.format("'%s'", o);
 		} else if (o instanceof Date || o instanceof Time || o instanceof Timestamp) {
-			return String.format("\"%s\"", o);
+			return String.format("'%s'", o);
 		} else {
 			return o.toString();
 		}

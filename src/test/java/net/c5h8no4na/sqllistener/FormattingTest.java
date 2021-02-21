@@ -25,12 +25,12 @@ class FormattingTest {
 
 		String input4 = "SELECT id FROM tags WHERE name = ?";
 		String formatted4 = getFormatted(input4, Map.of(1, "digitrade"));
-		String expected4 = "SELECT id FROM tags WHERE name = \"digitrade\"";
+		String expected4 = "SELECT id FROM tags WHERE name = 'digitrade'";
 		Assertions.assertEquals(expected4, formatted4);
 
 		String input5 = "SELECT tags_0.id, tags_0.tag_type_id, tags_0.text FROM tags AS tags_0 WHERE tags_0.text IN (?, ?)";
 		String formatted5 = getFormatted(input5, Map.of(1, "male", 2, "female"));
-		String expected5 = "SELECT tags_0.id, tags_0.tag_type_id, tags_0.text FROM tags AS tags_0 WHERE tags_0.text IN (\"male\", \"female\")";
+		String expected5 = "SELECT tags_0.id, tags_0.tag_type_id, tags_0.text FROM tags AS tags_0 WHERE tags_0.text IN ('male', 'female')";
 		Assertions.assertEquals(expected5, formatted5);
 
 		String input6 = "INSERT INTO post_file (file, post_id) VALUES (?, ?)";
@@ -40,7 +40,7 @@ class FormattingTest {
 
 		String input7 = "SELECT file FROM posts WHERE text = ? AND comment = ?";
 		String formatted7 = getFormatted(input7, Map.of(1, "?test123?", 2, "?test456?"));
-		String expected7 = "SELECT file FROM posts WHERE text = \"?test123?\" AND comment = \"?test456?\"";
+		String expected7 = "SELECT file FROM posts WHERE text = '?test123?' AND comment = '?test456?'";
 		Assertions.assertEquals(expected7, formatted7);
 	}
 

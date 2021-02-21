@@ -1,5 +1,7 @@
 package net.c5h8no4na.sqllistener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
@@ -16,18 +18,33 @@ public class SQLFormatterWithParams extends SQLFormatter {
 	@Override
 	public String prettyPrintNoFormatting() {
 		String sqlWithQuestionsmarks = super.prettyPrintNoFormatting();
-		int paramIndex = 1;
-		while (true) {
-			if (!params.containsKey(paramIndex)) {
-				break;
-			}
-			Object nextParam = params.get(paramIndex);
+		List<Integer> questionmarkIndex = new ArrayList<>();
 
-			sqlWithQuestionsmarks = sqlWithQuestionsmarks.replaceFirst("\\?", getSQLParam(nextParam));
-			paramIndex++;
+		for (int i = 0; i < sqlWithQuestionsmarks.length(); i++) {
+			if (input.charAt(i) == '?') {
+				questionmarkIndex.add(i);
+			}
 		}
 
-		return sqlWithQuestionsmarks;
+		if (params.size() == 0) {
+			return sqlWithQuestionsmarks;
+		}
+
+		if (questionmarkIndex.size() != params.size()) {
+			return input;
+		} else {
+			StringBuilder result = new StringBuilder();
+			int start = 0;
+			int end = 0;
+			for (int i = 0; i < questionmarkIndex.size(); i++) {
+				end = questionmarkIndex.get(i);
+				result.append(sqlWithQuestionsmarks.substring(start, end));
+				result.append(getSQLParam(params.get(i + 1)));
+				start = end + 1;
+			}
+			result.append(sqlWithQuestionsmarks.substring(end + 1));
+			return result.toString();
+		}
 	}
 
 	public String getSQLParam(Object o) {

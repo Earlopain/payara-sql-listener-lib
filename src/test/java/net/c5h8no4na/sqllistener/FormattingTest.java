@@ -37,6 +37,11 @@ class FormattingTest {
 		String formatted6 = getFormatted(input6, Map.of(1, BinaryData.VALUE, 2, 123));
 		String expected6 = "INSERT INTO post_file (file, post_id) VALUES (<binary data>, 123)";
 		Assertions.assertEquals(expected6, formatted6);
+
+		String input7 = "SELECT file FROM posts WHERE text = ? AND comment = ?";
+		String formatted7 = getFormatted(input7, Map.of(1, "?test123?", 2, "?test456?"));
+		String expected7 = "SELECT file FROM posts WHERE text = \"?test123?\" AND comment = \"?test456?\"";
+		Assertions.assertEquals(expected7, formatted7);
 	}
 
 	private String getFormatted(String input) {

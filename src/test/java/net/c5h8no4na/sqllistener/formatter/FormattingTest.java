@@ -42,6 +42,16 @@ class FormattingTest {
 		String formatted7 = getFormatted(input7, Map.of(1, "?test123?", 2, "?test456?"));
 		String expected7 = "SELECT file FROM posts WHERE text = '?test123?' AND comment = '?test456?'";
 		Assertions.assertEquals(expected7, formatted7);
+
+		String input8 = "SELECT file FROM posts";
+		String formatted8 = getFormatted(input8);
+		String expected8 = "SELECT file FROM posts";
+		Assertions.assertEquals(expected8, formatted8);
+
+		String input9 = "SELECT file FROM posts ORDER BY id";
+		String formatted9 = getFormatted(input9);
+		String expected9 = "SELECT file FROM posts ORDER BY id";
+		Assertions.assertEquals(expected9, formatted9);
 	}
 
 	private String getFormatted(String input) {

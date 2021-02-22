@@ -16,6 +16,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.OrderByVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -80,8 +82,15 @@ public class SQLFormatter {
 				join.getOnExpression().accept(fixExpressions());
 			}
 		}
+		if (plainSelect.getWhere() != null) {
+			plainSelect.getWhere().accept(fixExpressions());
+		}
 
-		plainSelect.getWhere().accept(fixExpressions());
+		if (plainSelect.getOrderByElements() != null) {
+			for (OrderByElement orderByElement : plainSelect.getOrderByElements()) {
+				orderByElement.accept(this.fixOrderBy());
+			}
+		}
 	}
 
 	private TablesNamesFinder fixTableNames() {
@@ -149,6 +158,15 @@ public class SQLFormatter {
 					purgedList.addExpressions(new Column("?"));
 				}
 				list.setExpressions(purgedList.getExpressions());
+			}
+		};
+	}
+
+	protected OrderByVisitorAdapter fixOrderBy() {
+		return new OrderByVisitorAdapter() {
+			@Override
+			public void visit(OrderByElement orderBy) {
+				orderBy.getExpression().accept(fixExpressions());
 			}
 		};
 	}

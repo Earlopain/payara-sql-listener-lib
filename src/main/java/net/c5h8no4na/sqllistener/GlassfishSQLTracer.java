@@ -22,7 +22,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.util", "java.lang",
 			"net.c5h8no4na.sqllistener.GlassfishSQLTracer", "com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss",
-			"org.apache");
+			"org.apache", "sun.reflect", "java.security", "javax.security");
 
 	private static final List<String> BINARY_STATEMENT_SETTERS = Arrays.asList("setAsciiStream", "setBinaryStream", "setBlob", "setBytes",
 			"setCharacterStream", "setClob", "setNCharacterStream", "setNClob");
@@ -105,6 +105,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	public static void clear() {
 		executedQueries.clear();
+		lastExecutedQueries.clear();
 		queryCount.set(0);
 	}
 

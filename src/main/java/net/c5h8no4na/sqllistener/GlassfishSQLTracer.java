@@ -41,7 +41,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	private static final Map<Long, PreparedStatementData> threadStatements = new ConcurrentHashMap<>();
 
-	private static boolean isActive = true;
+	private static boolean isActive = false;
 
 	/**
 	 * This method gets called for every method executed on the jdbc objects

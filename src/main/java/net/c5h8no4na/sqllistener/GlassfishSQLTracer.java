@@ -3,6 +3,7 @@ package net.c5h8no4na.sqllistener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -87,7 +88,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 			queryCount.incrementAndGet();
 
 			SQLInfoStructure infos = executedQueries.computeIfAbsent(record.getPoolName(), key -> new SQLInfoStructure(key));
-			infos.addQuery(current.getSqlSortable(), current.getStrackTrace(), record.getTimeStamp());
+			infos.addQuery(current.getSqlSortable(), current.getStrackTrace());
 
 			for (Consumer<PreparedStatementData> consumer : listeners.values()) {
 				consumer.accept(current);
@@ -133,8 +134,9 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 	 * Gets the current stacktrace, removes all stackframes from this package and
 	 * some other noise like com.sun. In the end only stackframes from the calling
 	 * project should be left
-	 * 
-	 * @return The stacktrace newline delimited
+	 *
+	 * @return The list of stacktraces, to to bottom.
+	 *         The list is unmodifiable, because it will be a key in a map later on
 	 */
 	private List<String> getFilteredStackTrace() {
 		List<String> result = new ArrayList<>();
@@ -143,7 +145,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 				result.add(stackTraceElement.toString());
 			}
 		}
-		return result;
+		return Collections.unmodifiableList(result);
 	}
 
 	private boolean shouldAddStackTraceElement(StackTraceElement stackTraceElement) {

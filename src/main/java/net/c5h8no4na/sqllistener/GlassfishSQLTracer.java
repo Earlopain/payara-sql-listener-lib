@@ -105,6 +105,10 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	public static void toggle() {
 		isActive = !isActive;
+		// Listener was stopped, clear all currently tracked statements
+		if (!isActive) {
+			threadStatements.clear();
+		}
 	}
 
 	public static boolean isActive() {
@@ -114,6 +118,7 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 	public static void clear() {
 		executedQueries.clear();
 		lastExecutedQueries.clear();
+		threadStatements.clear();
 		queryCount.set(0);
 	}
 

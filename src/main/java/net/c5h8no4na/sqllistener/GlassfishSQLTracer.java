@@ -1,7 +1,6 @@
 package net.c5h8no4na.sqllistener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -21,17 +20,18 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 
 	private static final Integer LAST_QUERIES_MAX_SIZE = 20;
 
-	private static final List<String> PACKAGE_IGNORE_LIST = Arrays.asList("java.util", "java.lang",
+	private static final List<String> PACKAGE_IGNORE_LIST = List.of("java.util", "java.lang",
 			"net.c5h8no4na.sqllistener.GlassfishSQLTracer", "com.sun", "org.hibernate", "jdk.internal", "org.glassfish", "org.jboss",
 			"org.apache", "sun.reflect", "java.security", "javax.security");
 
-	private static final List<String> BINARY_STATEMENT_SETTERS = Arrays.asList("setAsciiStream", "setBinaryStream", "setBlob", "setBytes",
+	private static final List<String> BINARY_STATEMENT_SETTERS = List.of("setAsciiStream", "setBinaryStream", "setBlob", "setBytes",
 			"setCharacterStream", "setClob", "setNCharacterStream", "setNClob");
 
-	private static final List<String> NON_BINARY_STATEMENT_SETTERS = Arrays.asList("setBigDecimal", "setBoolean", "setByte", "setDate",
+	private static final List<String> NON_BINARY_STATEMENT_SETTERS = List.of("setBigDecimal", "setBoolean", "setByte", "setDate",
 			"setDouble", "setFloat", "setInt", "setLong", "setNString", "setString", "setShort", "setTime", "setTimestamp");
 
-	private static final List<String> SEND_QUERY_TO_SERVER = Arrays.asList("execute", "executeQuery", "executeUpdate");
+	private static final List<String> SEND_QUERY_TO_SERVER = List.of("execute", "executeQuery", "executeUpdate");
+
 	private static final Map<String, SQLInfoStructure> executedQueries = new ConcurrentHashMap<>();
 
 	private static final Queue<PreparedStatementData> lastExecutedQueries = new ConcurrentLinkedQueue<>();
@@ -63,6 +63,13 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 		}
 
 		String methodName = record.getMethodName();
+		// When start/stopping the listener we might end up in the middle of something
+		// Instead of collecting a few NullPointerExceptions just do nothing
+		// Some time later prepareStatement will add something into the statement map
+		if (!methodName.equals("prepareStatement") && threadStatements.get(record.getThreadID()) == null) {
+			return;
+		}
+
 		if (methodName.equals("prepareStatement")) {
 			String sql = (String) record.getParams()[0];
 			PreparedStatementData current = new PreparedStatementData(sql, record.getPoolName(), getFilteredStackTrace(),
@@ -153,5 +160,4 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 			return stackTraceElement.getClassName().contains(entry);
 		});
 	}
-
 }

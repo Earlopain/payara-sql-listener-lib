@@ -157,7 +157,11 @@ public class GlassfishSQLTracer implements SQLTraceListener {
 				result.add(stackTraceElement.toString());
 			}
 		}
-		return Collections.unmodifiableList(result);
+		if (result.isEmpty()) {
+			return List.of("Unknown Stacktrace (why? who knows)");
+		} else {
+			return Collections.unmodifiableList(result);
+		}
 	}
 
 	private boolean shouldAddStackTraceElement(StackTraceElement stackTraceElement) {
